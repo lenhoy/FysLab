@@ -13,3 +13,9 @@ print('Objectnavn: %s, kolonner: '%(name)+str(labels))
 
 #Lagre verdiene t,x og y i egne lister
 t = []; x = []; y = [] #tre tomme lister
+for i in range(2, len(lines)):
+    l = lines[i].rstrip().split('\t')
+    
+    t.append(float("{:.5f}".format(float(l[0]))))
+    x.append(float("{:.5f}".format(float(l[1]))))
+    y.append(float("{:.5f}".format(float(l[2]))))
