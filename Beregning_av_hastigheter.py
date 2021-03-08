@@ -19,3 +19,11 @@ for i in range(2, len(lines)):
     t.append(float("{:.5f}".format(float(l[0]))))
     x.append(float("{:.5f}".format(float(l[1]))))
     y.append(float("{:.5f}".format(float(l[2]))))
+    
+# Plott
+fig, ax = plt.subplots(1,1,figsize=(10,6),constrained_layout=True)
+ax.scatter(x,y,c='r') #Scatterplot på y(x)
+plt.title('Banens form med autotracker', fontsize=16)
+ax.set_xlabel('x (m)', fontsize=14)
+ax.set_ylabel('y (m)', fontsize=14)
+plt.show()
