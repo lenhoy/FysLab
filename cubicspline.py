@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import Beregning_av_hastigheter as funk
 from scipy.interpolate import CubicSpline
+import math
 
 #Horisontal avstand mellom festepunktene er 0.200 m
 h = 0.200
@@ -52,14 +53,101 @@ y = cs(x)       #y=tabell med 1401 verdier for y(x)
 dy = cs(x,1)    #dy=tabell med 1401 verdier for y'(x)
 d2y = cs(x,2)   #d2y=tabell med 1401 verdier for y''(x)
 
+
+######################################################################
+
+# Helning
+
+def helning(dx, dy):
+    
+    Theta = np.array([])
+    
+    for i in range(1400):
+        
+        #theta = math.asin(dy[i]/dx)
+        #Theta = np.append(Theta, theta)
+        
+    
+    print("Helningsutvikling")
+    print(Theta)
+    
+    return Theta
+
+helning(dx, dy)
+
+###################################################################
+
+# Beregning av krumning
+
+def krumning(d2y, dy):
+    """[summary]
+
+    Args:
+        d2y ([type]): [description]
+        dy ([type]): [description]
+
+    Returns:
+        array: Krumningen
+    """
+    
+    k = (d2y)/(1+dy**2)**(3/2)
+    
+    return k
+  
+print("Krumning: ")  
+k = krumning(d2y, dy)
+print(k)
+funk.plotBaneForm(x, k, "Krumning", "x(m) (m)", "k (1/m)", "Krumning", -2, 2)
+
+
+####################################################################
+
+# Fart over tid 
+
+
+# Beregnet Hastighetsutvikling
+v = funk.BeregnHastighet(y)
+print("Teoretisk beregnet slutthastighet")
+print(v[-1])
+
+
+def v_x(v, theta):
+    return "Hei"
+
+def fartOverTid():
+
+    for i in range(1400):
+        
+        res = (2*dx[i])/(v_x[i-1]+v_x[i])
+
+
+
+
+
+
+##########################################################################
+
+# Henter ut Observert data
+t_obs, x_obs, y_obs = funk.HentDataFraFil('./Data/txy_1.txt')
+    
+
+
+#########################################################################
+
 #Plotteeksempel: Banens form y(x)
+
+
 baneform = plt.figure('y(x)',figsize=(12,6))
-plt.plot(x,y,xfast,yfast,'*')
+plt.plot(x,y, label="Beregnet")
+plt.plot(xfast,yfast,'*', label="Festepunkter")
+plt.plot(x_obs, y_obs, label="Observert")
 plt.title('Banens form')
 plt.xlabel('$x$ (m)',fontsize=20)
 plt.ylabel('$y(x)$ (m)',fontsize=20)
 plt.ylim(0.10,0.40)
+plt.legend()
 plt.grid()
+
 
 #Figurer kan lagres i det formatet du foretrekker:
 #baneform.savefig("baneform.pdf", bbox_inches='tight')
@@ -67,16 +155,59 @@ plt.grid()
 #baneform.savefig("baneform.eps", bbox_inches='tight')
 
 
-#Hastighetsutvikling
-v = funk.BeregnHastighet(y)
+####################################################################
 
-baneform = plt.figure('v(x)',figsize=(12,6))
-plt.plot(x,v,xfast,yfast,'*')
+# Hastighetsutvikling uten festepunkter i plot
+
+
+
+
+# Observert Hastighetsutvikling
+#v_obs = BeregnHastighet(y_obs) 
+v_obs = funk.observerteHastigheter(x_obs, y_obs)
+print("Observerte hastigheter: ")
+print(v_obs)
+
+beregnethastighet = plt.figure('v(x)',figsize=(12,6))
+plt.plot(x,v, label="Beregnet")
+plt.plot(x_obs[1:],v_obs, label="Observert")
+#plt.plot(xfast,yfast,'*', label="Festepunkter")
 plt.title('Hastighetsutvikling')
 plt.xlabel('$x$ (m)',fontsize=20)
-plt.ylabel('$v(x)$ (m)',fontsize=20)
+plt.ylabel('$v(x)$ (m/s)',fontsize=20)
 plt.ylim(0,2.1)
 plt.grid()
-plt.show()
+plt.legend()
+#plt.show()
 
-#baneform.savefig("Hastighetsutvikling.png", bbox_inches='tight')
+
+
+#######################################################################
+
+
+# Hastighetsutvikling med festpunkter i plot
+
+fig, ax1 = plt.subplots()
+color="tab:red"
+ax1.set_xlabel("$x$ (m)", fontsize=20)
+ax1.set_ylabel('$y(x)$ (m)', fontsize=20, color=color)
+ax1.plot(xfast, yfast, '*', label="Festepunkter")
+ax1.tick_params(axis='y', labelcolor=color)
+
+ax2 = ax1.twinx()
+
+color="tab:blue"
+ax2.set_ylabel("$v(x)$ (m/s)", fontsize=20, color=color)
+ax2.plot(x,v, label="Beregnet", color=color)
+ax2.plot(x_obs[1:],v_obs, label="Observert", color="orange")
+ax2.tick_params(axis='y', labelcolor=color)
+
+plt.title("Hastighetsutvikling")
+plt.legend()
+plt.grid()
+fig.tight_layout()
+#plt.show()
+
+#fig.savefig("HastighetsutviklingDualAxis.png", bbox_inches="tight")
+
+#beregnethastighet.savefig("Hastighetsutvikling.png", bbox_inches='tight')
