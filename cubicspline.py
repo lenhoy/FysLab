@@ -15,6 +15,7 @@
 # (2) rulle rent, uten aa gli ("slure").
 
 #Importerer noedvendige biblioteker:
+from typing import List
 from Beregning_av_hastigheter import BeregnHastighet
 import matplotlib.pyplot as plt
 import numpy as np
@@ -54,32 +55,27 @@ dy = cs(x,1)    #dy=tabell med 1401 verdier for y'(x)
 d2y = cs(x,2)   #d2y=tabell med 1401 verdier for y''(x)
 
 
-######################################################################
+# Gjennomsnittlig fart i x retning
+vx_avg = np.zeros(Nx)
+
+# tidsintervaller
+dt = np.zeros(Nx)
+
+# tider
+t = np.zeros(Nx)
+
+
 
 # Helning
+B = np.arctan(dy)
 
-def helning(dx, dy):
-    
-    Theta = np.array([])
-    
-    for i in range(1400):
-        
-        #theta = math.asin(dy[i]/dx)
-        #Theta = np.append(Theta, theta)
-        
-    
-    print("Helningsutvikling")
-    print(Theta)
-    
-    return Theta
+#funk.plotBaneForm(x, B, "Helning", "x(m) (m)", "Grader", "Helning", -0.5, 0.1)
 
-helning(dx, dy)
 
-###################################################################
 
 # Beregning av krumning
 
-def krumning(d2y, dy):
+def krumning(d2y, dy)->List:
     """[summary]
 
     Args:
@@ -93,43 +89,83 @@ def krumning(d2y, dy):
     k = (d2y)/(1+dy**2)**(3/2)
     
     return k
-  
-print("Krumning: ")  
 k = krumning(d2y, dy)
-print(k)
-funk.plotBaneForm(x, k, "Krumning", "x(m) (m)", "k (1/m)", "Krumning", -2, 2)
-
-
-####################################################################
-
-# Fart over tid 
+#funk.plotBaneForm(x, k, "Krumning", "x(m) (m)", "k (1/m)", "Krumning", -2, 2)
 
 
 # Beregnet Hastighetsutvikling
 v = funk.BeregnHastighet(y)
-print("Teoretisk beregnet slutthastighet")
-print(v[-1])
 
+# horisontalFart
+def v_x(v, B):
+    v_x = v * np.cos(B)
+    return v_x
+vx = v_x(v, B)
 
-def v_x(v, theta):
-    return "Hei"
-
-def fartOverTid():
-
-    for i in range(1400):
+# Fart over tid 
+for n in range(1, len(vx)):
+    vx_avg[n] = 0.5*(vx[n] + vx[n-1])
+    dt[n] = (x[n] - x[n-1])/vx_avg[n]
+    t[n] = np.sum(dt[0:n])
         
-        res = (2*dx[i])/(v_x[i-1]+v_x[i])
+
+#funk.plotBaneForm(t, v, "Fart som funksjon av tid", "t (s)", "v(x) (m)", "Fart", -1, 2.5)
 
 
+# Sntripitalakselerasjon
+sentAks = v**2 * k
 
 
+# Normalkraften
+
+g = 9.81
+M = 0.31 #Massen av kula
+
+N = M*(g*np.cos(B) + sentAks)
+
+funk.plotBaneForm(x, N, "Normalkraft", 
+                  "x(m) (m)",
+                  "N (N)", 
+                  "Normalkraften",
+                  2, 4)
 
 
-##########################################################################
+# Friksjon
+f = (2*M*np.sin(B))/7
+
+funk.plotBaneForm(x, f, 
+                  "Friksjon over x akse", 
+                  "$x(m)$ (m)", 
+                  "friksjonskraft (N)", 
+                  "Friksjonskraft", 
+                  -0.05,0.05)
+
+
+#Forhold Normalkraft og friksjonskraft
+funk.plotBaneForm(x, (f/N), "Forhold mellom Friksjon og Normalkraft",
+                  "$x(m)$ (m)", 
+                  "f/N", 
+                  "Forholdstall", 
+                  -0.025,0.01)
 
 # Henter ut Observert data
 t_obs, x_obs, y_obs = funk.HentDataFraFil('./Data/txy_1.txt')
     
+
+
+###########################################################
+
+# Posisjon over t
+posOverT = plt.figure('t (s)',figsize=(12,6))
+plt.plot(t,x, label="Beregnet")
+plt.plot(t_obs, x_obs, label="Observert")
+plt.title('Posisjon over tid')
+plt.xlabel('$t$ (s)',fontsize=20)
+plt.ylabel('$x(m)$ (m)',fontsize=20)
+plt.ylim(0.0,1.5)
+plt.legend()
+plt.grid()
+# plt.show()
 
 
 #########################################################################
@@ -158,10 +194,6 @@ plt.grid()
 ####################################################################
 
 # Hastighetsutvikling uten festepunkter i plot
-
-
-
-
 # Observert Hastighetsutvikling
 #v_obs = BeregnHastighet(y_obs) 
 v_obs = funk.observerteHastigheter(x_obs, y_obs)
@@ -188,25 +220,24 @@ plt.legend()
 # Hastighetsutvikling med festpunkter i plot
 
 fig, ax1 = plt.subplots()
-color="tab:red"
 ax1.set_xlabel("$x$ (m)", fontsize=20)
-ax1.set_ylabel('$y(x)$ (m)', fontsize=20, color=color)
-ax1.plot(xfast, yfast, '*', label="Festepunkter")
-ax1.tick_params(axis='y', labelcolor=color)
+ax1.set_ylabel('$y(x)$ (m)', fontsize=20, color="red")
+ax1.plot(xfast, yfast, '*', label="Festepunkter", color="red")
+ax1.tick_params(axis='y', labelcolor="red")
+ax1.legend()
 
 ax2 = ax1.twinx()
 
-color="tab:blue"
-ax2.set_ylabel("$v(x)$ (m/s)", fontsize=20, color=color)
-ax2.plot(x,v, label="Beregnet", color=color)
+ax2.set_ylabel("$v(x)$ (m/s)", fontsize=20, color="tab:blue")
+ax2.plot(x,v, label="Beregnet", color="tab:blue")
 ax2.plot(x_obs[1:],v_obs, label="Observert", color="orange")
-ax2.tick_params(axis='y', labelcolor=color)
+ax2.tick_params(axis='y', labelcolor="tab:blue")
 
 plt.title("Hastighetsutvikling")
 plt.legend()
 plt.grid()
 fig.tight_layout()
-#plt.show()
+# plt.show()
 
 #fig.savefig("HastighetsutviklingDualAxis.png", bbox_inches="tight")
 

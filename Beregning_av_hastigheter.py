@@ -53,7 +53,6 @@ def plotBaneForm(x, y, title, xlabel, ylabel, legendLabel, ylabelMin, ylabelMax)
     """
     
     baneform = plt.figure('y(x)',figsize=(12,6))
-    plt.plot(x,y)
     plt.plot(x, y, label=legendLabel)
     plt.title(title)
     plt.xlabel(xlabel, fontsize=20)
